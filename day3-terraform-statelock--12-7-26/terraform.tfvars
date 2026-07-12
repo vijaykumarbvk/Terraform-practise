@@ -1,0 +1,8 @@
+ami_id = "ami-01edba92f9036f76e"
+instance_type = "t2.medium"
+tags = "vj"
+bucket_name = "vij12oasljafidobvj"
+table_name   = "vj-logs"
+billing_mode = "PAY_PER_REQUEST"
+hash_key     = "LockID"
+environment  = "dev"
