@@ -10,3 +10,12 @@ resource "aws_instance" "name" {
     }
   
 }
+
+resource "aws_instance" "name3" {
+    ami = "ami-01edba92f9036f76e"
+    instance_type = "t2.medium"
+    tags = {
+        Name = "dev-4"
+    }
+  
+}
