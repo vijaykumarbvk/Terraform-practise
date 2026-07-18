@@ -10,3 +10,7 @@ resource "aws_instance" "name" {
         Name = "statelock"
     }
 }
+
+resource "aws_s3_bucket" "s3_bucket-3" {
+    bucket = "vj-prac-terraform-day10-1"
+}
