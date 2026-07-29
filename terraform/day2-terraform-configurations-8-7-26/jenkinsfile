@@ -1,0 +1,22 @@
+node {
+    stage('git clone') { 
+        git branch: 'main', url: 'https://github.com/CloudTechDevOps/1030-terraform-practice.git'
+    }
+    stage('init') {
+        dir('Day-2-terraform-configurtions') {
+         sh "terraform init"
+        }
+}
+stage('plan') {
+        dir('Day-2-terraform-configurtions') {
+         sh "terraform plan"
+        }
+}
+stage('apply') {
+        dir('Day-2-terraform-configurtions') {
+         sh "terraform apply -auto-approve"
+        }
+}
+  
+      
+}
