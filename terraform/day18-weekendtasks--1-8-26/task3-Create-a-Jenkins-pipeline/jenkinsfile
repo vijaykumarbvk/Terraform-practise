@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    options {
+        // Enforce that only one pipeline execution can run at a time
+        disableConcurrentBuilds()
+        // Keep logs for the last 10 builds to save space
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    environment {
+        // Assumes you have configured AWS credentials in Jenkins
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pulls the latest code from the GitHub branch triggering the job
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                sh 'terraform validate'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                // Outputs the plan to a binary file so the exact plan is applied later
+                sh 'terraform plan -out=tfplan'
+                sh 'terraform show -no-color tfplan > tfplan.txt'
+            }
+        }
+
+        stage('Manager Approval') {
+            steps {
+                timeout(time: 2, unit: 'HOURS') {
+                    // Pauses the pipeline here until a user clicks 'Approve' or 'Abort'
+                    input message: 'Review the Terraform plan in the console output. Approve deployment?', 
+                          ok: 'Approve and Apply'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                // Applies the exact plan generated in the previous stage without prompting
+                sh 'terraform apply -input=false tfplan'
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'tfplan.txt', allowEmptyArchive: true
+            // Clean up workspace to prevent credentials/state leakage on the agent
+            cleanWs()
+        }
+    }
+}
